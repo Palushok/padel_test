@@ -1,0 +1,127 @@
+video:
+  path: ""
+
+court:
+  mode: "manual"  # "manual" or "auto"
+  manual_points:
+    # 4 floor corners in pixel coords [x, y]
+    # Order: far-left, far-right, near-right, near-left (as seen in image)
+    floor: []
+    # 4 wall top-edge corners in pixel coords [x, y]
+    # Order: far-left-top, far-right-top, near-right-top, near-left-top
+    wall_tops: []
+
+  # Real-world court dimensions in meters
+  real_width: 10.0
+  real_length: 20.0
+  real_points:
+    - [0.0, 0.0]
+    - [10.0, 0.0]
+    - [10.0, 20.0]
+    - [0.0, 20.0]
+
+  auto:
+    canny_low: 50
+    canny_high: 150
+    hough_threshold: 100
+    min_line_length: 100
+    max_line_gap: 10
+
+players:
+  detection:
+    model: "yolo11n.pt"
+    confidence: 0.5
+    person_class_id: 0
+    imgsz: 1280
+    racket:
+      enabled: true
+      class_id: 38          # COCO 'tennis_racket'
+      confidence: 0.3
+  tracking:
+    tracker: "botsort.yaml"
+    persist: true
+  action_recognition:
+    # When enabled: uses a trained model to classify hit types
+    # (serve, return, volley, groundstroke, lob, overhead, smash, wall_play)
+    # When disabled: hits are detected rule-based (ball proximity + velocity change),
+    # no hit type classification except "serve" (detected by game state)
+    enabled: false
+    model_path: null  # path to fine-tuned weights; required when enabled
+    clip_length: 16
+    stride: 8
+    crop_size: [112, 112]
+    device: null  # null = auto (cuda if available)
+
+ball:
+  detection:
+    model: "yolo11n.pt"
+    confidence: 0.15
+    sports_ball_class_id: 32
+    imgsz: 1280
+  kalman:
+    process_noise: 1.0e-2
+    measurement_noise: 1.0
+    interpolated_noise_scale: 3.0  # measurement noise multiplier for interpolated positions
+    initial_covariance: 1.0
+  interpolation:
+    max_gap: 10
+    method: "cubic"
+
+events:
+  low_level:
+    velocity_change_threshold: 15.0
+    racket_hit_distance: 40.0   # ball-to-racket bbox center (pixels)
+    player_hit_distance: 100.0  # ball-to-player center fallback (pixels)
+    net_zone_width: 0.5
+    net_speed_drop_ratio: 0.5
+
+  high_level:
+    double_bounce_window: 60
+    serve_start_zone_ratio: 0.25
+
+rally_classifier:
+  model_path: null        # path to trained weights; null = heuristic only
+  sample_interval: 5      # run model every N frames
+  input_size: [224, 224]
+  device: null             # null = auto (cuda if available)
+  heuristic:
+    speed_threshold: 3.0   # pixels/frame — below this, player is "stationary"
+    active_ratio: 0.5      # fraction of players that must be moving
+    window_frames: 30      # sliding window for speed averaging
+
+trajectory_analysis:
+  enabled: true
+  post_bounce_window: 12     # frames to analyze after the bounce
+  pre_bounce_window: 10      # frames to analyze before the bounce
+  court_y_displacement_threshold: 1.5  # meters — above this → wall bounce
+  curvature_threshold: 0.01  # image-space curvature coefficient
+  weights:
+    rules: 0.35
+    court_y: 0.25
+    curvature: 0.20
+    rally: 0.20
+
+score_ocr:
+  # Reads the on-screen score overlay via OCR (always active).
+  # OCR score is treated as ground truth: if FSM and OCR disagree,
+  # OCR wins and FSM events are corrected.
+  roi: null  # [x1, y1, x2, y2] pixel region of score overlay; null = auto-detect
+  sample_interval: 30  # read score every N frames
+  min_confidence: 0.5
+  languages: ["en"]
+  gpu: true
+  reconciliation:
+    confirmation_delay_sec: 3.0  # seconds to wait for scoreboard to update after event
+
+visualization:
+  draw_court: true
+  draw_players: true
+  draw_rackets: true
+  draw_ball: true
+  draw_trail: true
+  trail_length: 15
+  draw_minimap: true
+  minimap_size: [300, 600]
+  minimap_position: "top-right"
+  output_path: "output.mp4"
+  output_fps: null
