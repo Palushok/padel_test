@@ -1,0 +1,40 @@
+---
+description: Padel video analysis pipeline — project overview, structure, conventions
+alwaysApply: true
+---
+
+# Padel Analysis Pipeline
+
+Offline video analysis pipeline for padel tennis. Input: match video. Output: player tracking, game events, score.
+
+## Architecture (4 phases)
+
+1. **Init**: 8 court points (manual/auto) → homography + 5-surface 3D geometry
+2. **Frame loop**: single video pass — YOLO (players + rackets + ball), OCR score sampling, rally state sampling
+3. **Post-processing**: interpolation → Kalman filter → team assignment → (optional) action recognition → low-level events → game FSM → OCR score reconciliation
+4. **Visualization**: overlay video + minimap
+
+## Project layout
+
+- `config/default.yaml` — all parameters
+- `scripts/run_pipeline.py` — CLI (click)
+- `scripts/evaluate.py` — evaluation CLI
+- `src/pipeline.py` — main orchestrator
+- `src/court/` — detector, homography, geometry (5 surfaces from 8 points)
+- `src/players/` — tracker (YOLO+BoT-SORT), team assigner, rally classifier, action recognition
+- `src/ball/` — detector (YOLO, TODO: switch to TrackNet), Kalman filter, interpolator, trajectory analyzer
+- `src/events/` — low_level (bounces, hits), high_level (game FSM)
+- `src/score/` — OCR reader (EasyOCR), reconciler (OCR overrides FSM)
+- `src/evaluation/` — metrics for ball, tracking (HOTA/MOTA), events, rally, score
+- `docs/` — architecture.md, pipeline.md, models.md, data_format.md, training.md, evaluation.md
+
+## Key conventions
+
+- Python 3.10+, `from __future__ import annotations`
+- All config in YAML, all output in JSON (schema in `docs/data_format.md`)
+- OCR score is **ground truth** — always overrides event-based scoring
+- Rally classifier is **mandatory** (heuristic always, model optional)
+- Action recognition is **optional** (R3D-18, 8 classes)
+- Court coordinates: X ∈ [0,10]m, Y ∈ [0,20]m, net at Y=10
+- Side switch after odd game totals
+- Deps: ultralytics, opencv, numpy, filterpy, scipy, torch, torchvision, easyocr, click, pyyaml

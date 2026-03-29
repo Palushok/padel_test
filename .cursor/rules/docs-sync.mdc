@@ -1,0 +1,20 @@
+---
+description: Keep docs/ in sync with any code change
+alwaysApply: true
+---
+
+# Documentation Sync
+
+When you modify code in `src/`, `config/`, or `scripts/`, **always** update the relevant docs:
+
+| Changed | Update |
+|---------|--------|
+| Pipeline phases, data flow, component wiring | `docs/architecture.md` |
+| Phase steps, CLI options, processing details | `docs/pipeline.md` |
+| Model swap, new model, config change for a model | `docs/models.md` |
+| Output JSON fields, new event types, coordinate systems | `docs/data_format.md` |
+| Training data format, fine-tuning instructions, tuning params | `docs/training.md` |
+| Evaluation metrics, GT format, evaluate.py options | `docs/evaluation.md` |
+| Config keys added/removed/renamed | `config/default.yaml` comments + relevant docs |
+
+Do not skip documentation updates — treat them as part of the same change.
