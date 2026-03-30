@@ -6,10 +6,19 @@ court:
   manual_points:
     # 4 floor corners in pixel coords [x, y]
     # Order: far-left, far-right, near-right, near-left (as seen in image)
-    floor: []
+    # Default: marked from videos/padel_11-28.mp4 (1920x1080, FIP World Padel Qatar 2024)
+    floor:
+      - [488, 338]    # 0: far-left
+      - [1432, 338]   # 1: far-right
+      - [1732, 805]   # 2: near-right
+      - [188, 805]    # 3: near-left
     # 4 wall top-edge corners in pixel coords [x, y]
     # Order: far-left-top, far-right-top, near-right-top, near-left-top
-    wall_tops: []
+    wall_tops:
+      - [425, 178]    # 4: far-left-top
+      - [1495, 178]   # 5: far-right-top
+      - [1870, 460]   # 6: near-right-top
+      - [50, 460]     # 7: near-left-top
 
   # Real-world court dimensions in meters
   real_width: 10.0
