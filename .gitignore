@@ -21,7 +21,6 @@ venv/
 .DS_Store
 Thumbs.db
 
-*.mp4
 *.avi
 *.mov
 *.mkv
